@@ -8,7 +8,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-//#include <initializer_list>
 using namespace std;
 
 
@@ -16,27 +15,26 @@ int table(){
     //gROOT->SetStyle("ATLAS");
 
     // Read tree and set branchs
-    	 TFile* file = TFile::Open("./merge.root");
+    TFile* file = TFile::Open("./merge.root");
     TTree* reduced = dynamic_cast<TTree*>(file->Get("reduced"));
-   
-	
-    // #include "./SetTree.icc"
-   Float_t         Header[5];
-   Float_t         NPETotal4us;
-   Float_t         Ratio4us;
-   Float_t         Position_wm[3];
-    
-
-  TBranch        *b_Header;   //!
-  TBranch        *b_NPETotal4us;   //!
-  TBranch        *b_Ratio4us;   //!
-  TBranch        *b_Position_wm;   //!
 
 
-   reduced->SetBranchAddress("Header", Header, &b_Header);
-   reduced->SetBranchAddress("NPETotal4us", &NPETotal4us, &b_NPETotal4us);
-   reduced->SetBranchAddress("Position_wm", Position_wm, &b_Position_wm);
-   reduced->SetBranchAddress("Ratio4us", &Ratio4us, &b_Ratio4us);
+    Float_t         Header[5];
+    Float_t         NPETotal4us;
+    Float_t         Ratio4us;
+    Float_t         Position_wm[3];
+
+
+    TBranch        *b_Header;   //!
+    TBranch        *b_NPETotal4us;   //!
+    TBranch        *b_Ratio4us;   //!
+    TBranch        *b_Position_wm;   //!
+
+
+    reduced->SetBranchAddress("Header", Header, &b_Header);
+    reduced->SetBranchAddress("NPETotal4us", &NPETotal4us, &b_NPETotal4us);
+    reduced->SetBranchAddress("Position_wm", Position_wm, &b_Position_wm);
+    reduced->SetBranchAddress("Ratio4us", &Ratio4us, &b_Ratio4us);
 
     reduced->SetBranchStatus("*",0);
     reduced->SetBranchStatus("Header");
@@ -47,10 +45,10 @@ int table(){
     Int_t Entries = reduced->GetEntries();
     cout<<"ok"<<endl;
 
-     const double InitFactor = 0.0;
-     const double TermFactor = 0.2;
+    const double InitFactor = 0.0;
+    const double TermFactor = 0.2;
 
-     const double nSigma = 1.5; // Fitting range for position table
+    const double nSigma = 1.5; // Fitting range for position table
 
     // Set NPETotal4us range
     TH1D* HistNPE = new TH1D("HistNPE","HistNPE",1000,0,5000);
@@ -88,10 +86,24 @@ int table(){
         PosPro[2]->Fill(Position_wm[2]);
     }
     cout<<"ok2"<<endl;
-       
+
     TF1* PosTestGaus = new TF1("PosTestGaus","gaus");
-    vector<vector<double>> PosCenter = {{-360, -180, 0, 180, 330}, {-300, -100, 100, 300}, {-400, -250, -85, 110, 290, 430}};
-    vector<vector<double>> PosSigma  = {{ 40, 40, 40, 40, 40},{ 40, 40, 40, 40},{ 40, 40, 40, 40, 40, 40}};
+    //vector<vector<double>> PosCenter = {{-360, -180, 0, 180, 330}, {-300, -100, 100, 300}, {-400, -250, -85, 110, 290, 430}};
+    //vector<vector<double>> PosSigma  = {{ 40, 40, 40, 40, 40},{ 40, 40, 40, 40},{ 40, 40, 40, 40, 40, 40}};
+    vector<vector<double> > PosCenter, PosSigma;
+    vector<double> PosCenterX, PosCenterY, PosCenterZ, PosSigmaX, PosSigmaY, PosSigmaZ;
+    PosCenterX.push_back(-360.); PosCenterX.push_back(-180.); PosCenterX.push_back(0.); PosCenterX.push_back(180.); PosCenterX.push_back(330.);
+    PosCenterY.push_back(-300.); PosCenterY.push_back(-100.); PosCenterY.push_back(100.); PosCenterY.push_back(300.);
+    PosCenterZ.push_back(-400.); PosCenterZ.push_back(-250.); PosCenterZ.push_back(-85.); PosCenterZ.push_back(110.); PosCenterZ.push_back(290.); PosCenterZ.push_back(430.);
+    PosCenter.push_back(PosCenterX);
+    PosCenter.push_back(PosCenterY);
+    PosCenter.push_back(PosCenterZ);
+    PosSigmaX.push_back(40.); PosSigmaX.push_back(40.); PosSigmaX.push_back(40.); PosSigmaX.push_back(40.); PosSigmaX.push_back(40.);
+    PosSigmaY.push_back(40.); PosSigmaY.push_back(40.); PosSigmaY.push_back(40.); PosSigmaY.push_back(40.);
+    PosSigmaZ.push_back(40.); PosSigmaZ.push_back(40.); PosSigmaZ.push_back(40.); PosSigmaZ.push_back(40.); PosSigmaZ.push_back(40.); PosSigmaZ.push_back(40.);
+    PosSigma.push_back(PosSigmaX);
+    PosSigma.push_back(PosSigmaY);
+    PosSigma.push_back(PosSigmaZ);
 
     for(int i=0;i<PosCenter.size();++i){
         for(int j=0;j<PosCenter.at(i).size();++j){
@@ -149,7 +161,7 @@ int table(){
         Pos[0]->Fill(Position_wm[0]);
     }
     Pos[0]->Fit("PosGaus","S","",PosCenter.at(0).at(OrderX.at(FittingCrystal)) - nSigma*PosSigma.at(0).at(OrderX.at(FittingCrystal)),
-                PosCenter.at(0).at(OrderX.at(FittingCrystal)) + nSigma*PosSigma.at(0).at(OrderX.at(FittingCrystal)));
+            PosCenter.at(0).at(OrderX.at(FittingCrystal)) + nSigma*PosSigma.at(0).at(OrderX.at(FittingCrystal)));
     Pos[0]->Fit("PosGaus","S","",PosGaus->GetParameter(1)-nSigma*PosGaus->GetParameter(2),PosGaus->GetParameter(1)+nSigma*PosGaus->GetParameter(2));
 
     ofs << PosGaus->GetParameter(1) << "  ";
@@ -176,10 +188,10 @@ int table(){
 
         //Y
         Pos[1]->Fill(Position_wm[1]);
-        
+
     }
     Pos[1]->Fit("PosGaus","S","",PosCenter.at(1).at(OrderY.at(FittingCrystal)) - nSigma*PosSigma.at(1).at(OrderY.at(FittingCrystal)),
-                PosCenter.at(1).at(OrderY.at(FittingCrystal)) + nSigma*PosSigma.at(1).at(OrderY.at(FittingCrystal)));
+            PosCenter.at(1).at(OrderY.at(FittingCrystal)) + nSigma*PosSigma.at(1).at(OrderY.at(FittingCrystal)));
     Pos[1]->Fit("PosGaus","S","",PosGaus->GetParameter(1)-nSigma*PosGaus->GetParameter(2),PosGaus->GetParameter(1)+nSigma*PosGaus->GetParameter(2));
     ofs << PosGaus->GetParameter(1) << "  ";
     ofs << PosGaus->GetParameter(2) << "  ";
@@ -204,16 +216,16 @@ int table(){
 
         //Z
         Pos[2]->Fill(Position_wm[2]);
-        
+
     }
     Pos[2]->Fit("PosGaus","S","",PosCenter.at(2).at(OrderZ.at(FittingCrystal)) - nSigma*PosSigma.at(2).at(OrderZ.at(FittingCrystal)),
-                PosCenter.at(2).at(OrderZ.at(FittingCrystal)) + nSigma*PosSigma.at(2).at(OrderZ.at(FittingCrystal)));
+            PosCenter.at(2).at(OrderZ.at(FittingCrystal)) + nSigma*PosSigma.at(2).at(OrderZ.at(FittingCrystal)));
     Pos[2]->Fit("PosGaus","S","",PosGaus->GetParameter(1)-nSigma*PosGaus->GetParameter(2),PosGaus->GetParameter(1)+nSigma*PosGaus->GetParameter(2));
     ofs << PosGaus->GetParameter(1) << "  ";
     ofs << PosGaus->GetParameter(2) << "  ";
     ofs << endl;
     C2->SaveAs(Form("./figs/Cry%02d-Z.pdf",FittingCrystal));
 
-    
-return 0;
+
+    return 0;
 }
