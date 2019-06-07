@@ -17,7 +17,7 @@ int table(){
 
     // Read tree and set branchs
     	 TFile* file = TFile::Open("./merge.root");
-    TTree* tree = dynamic_cast<TTree*>(file->Get("reduced"));
+    TTree* reduced = dynamic_cast<TTree*>(file->Get("reduced"));
    
 	
     // #include "./SetTree.icc"
@@ -55,7 +55,7 @@ int table(){
     // Set NPETotal4us range
     TH1D* HistNPE = new TH1D("HistNPE","HistNPE",1000,0,5000);
     for(int iEntry=Entries*InitFactor; iEntry<Entries*TermFactor; ++iEntry){
-        tree->GetEntry(iEntry);
+        reduced->GetEntry(iEntry);
         if(iEntry % 1000000 == 0) cout << iEntry << "/" << Entries << "(" << (double)iEntry/Entries*100. << "%)" << endl;
         HistNPE->Fill(NPETotal4us);
     }
@@ -77,7 +77,7 @@ int table(){
     for(int i=0;i<3;++i){PosPro[i] = new TH1D(Form("PosPro%01d",i),Form("PosPro%01d",i),1200,-600,600);}
 
     for(int iEntry=Entries*InitFactor; iEntry<Entries*TermFactor; ++iEntry){
-        tree->GetEntry(iEntry);
+        reduced->GetEntry(iEntry);
         if(iEntry % 1000000 == 0) cout << iEntry << "/" << Entries << "(" << (double)iEntry/Entries*100. << "%)" << endl;
         if(RangeMinNPE > NPETotal4us) continue;
         if(RangeMaxNPE < NPETotal4us) continue;
